@@ -45,7 +45,7 @@ public class MainController {
         return "main";
     }
 
-    @PostMapping("add")
+    @PostMapping("/main")
     public String add(@AuthenticationPrincipal User user,
                       @RequestParam String text,
                       @RequestParam String tag, Map<String, Object> model,
