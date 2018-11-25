@@ -22,26 +22,26 @@ public class UserController {
     private UserRepo userRepo;
 
     @GetMapping
-    public String userList(Model model){
-        model.addAttribute("users",userRepo.findAll());
+    public String userList(Model model) {
+        model.addAttribute("users", userRepo.findAll());
         return "userlist";
     }
 
     @GetMapping("{user}")
-    public String userEditForm(@PathVariable User user, Model model){
+    public String userEditForm(@PathVariable User user, Model model) {
         model.addAttribute("user", user);
         model.addAttribute("roles", Role.values());
         return "userEdit";
     }
 
     @PostMapping
-    public String userSave(@RequestParam("userId") User user, @RequestParam Map<String, String> form, @RequestParam String username){
+    public String userSave(@RequestParam("userId") User user, @RequestParam Map<String, String> form, @RequestParam String username) {
         user.setUsername(username);
 
-        Set<String> roles =  Arrays.stream(Role.values()).map(Role::name).collect(Collectors.toSet());
+        Set<String> roles = Arrays.stream(Role.values()).map(Role::name).collect(Collectors.toSet());
         user.getRoles().clear();
-        for (String key: form.keySet()){
-            if(roles.contains(key))
+        for (String key : form.keySet()) {
+            if (roles.contains(key))
                 user.getRoles().add(Role.valueOf(key));
         }
         userRepo.save(user);

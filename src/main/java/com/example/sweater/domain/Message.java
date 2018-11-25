@@ -5,7 +5,7 @@ import javax.persistence.*;
 @Entity
 public class Message {
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     private String text;
@@ -15,17 +15,26 @@ public class Message {
     @JoinColumn(name = "user_id")
     private User author;
 
+    public Message(String text, String tag, User user) {
+        this.text = text;
+        this.tag = tag;
+        this.author = user;
+    }
+
+    public Message() {
+
+    }
+
     public User getAuthor() {
         return author;
     }
 
-    public String getAuthorName(){
-        return author != null ? author.getUsername():"none";
-    }
-
-
     public void setAuthor(User author) {
         this.author = author;
+    }
+
+    public String getAuthorName() {
+        return author != null ? author.getUsername() : "none";
     }
 
     public String getText() {
@@ -50,15 +59,5 @@ public class Message {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Message(String text, String tag, User user) {
-        this.text = text;
-        this.tag = tag;
-        this.author = user;
-    }
-
-    public Message() {
-
     }
 }

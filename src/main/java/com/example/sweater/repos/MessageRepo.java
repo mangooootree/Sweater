@@ -8,3 +8,4 @@ import java.util.List;
 public interface MessageRepo extends CrudRepository<Message, Long> {
     List<Message> findByTagOrTextContainingIgnoreCase(String tag, String text);
 }
+
