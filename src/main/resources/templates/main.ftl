@@ -7,9 +7,10 @@
 </div>
 <br>
 <div>
-    <form method="post" action="add">
+    <form method="post" action="add" enctype="multipart/form-data">
         <input type="text" name="text"/>
         <input type="text" name="tag"/>
+        <input type="file" name="file">
         <button type="submit">Add</button>
         <input type="hidden" name="_csrf" value="${_csrf.token}"/>
     </form>
@@ -26,6 +27,11 @@
         ${message.text}
         ${message.tag}
         <i>${message.authorName}</i>
+        <div>
+            <#if message.filename??>
+                <img src="/img/${message.filename}">
+            </#if>
+        </div>
     </div>
 <#else>
 Mo messages
