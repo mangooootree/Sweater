@@ -32,68 +32,74 @@ public class MainController {
     private String uploadPath;
 
     @GetMapping("/")
-    public String greeting(@RequestParam(name = "name", required = false, defaultValue = "World") String name, Map<String, Object> model) {
-        model.put("name", name);
+    public String greeting(Map<String, Object> model) {
         return "greeting";
     }
 
     @GetMapping("/main")
-    public String main(@RequestParam(required = false) String filter, Model model) {
+    public String main(@RequestParam(required = false, defaultValue = "") String filter, Model model) {
         Iterable<Message> messages;
 
         if (filter != null && !filter.isEmpty()) {
-            messages = messageRepo.findByTagOrTextContainingIgnoreCase(filter, filter);
-        } else
+            messages = messageRepo.findByTag(filter);
+        } else {
             messages = messageRepo.findAll();
+        }
+
         model.addAttribute("messages", messages);
         model.addAttribute("filter", filter);
+
         return "main";
     }
 
     @PostMapping("/main")
-    public String add(@AuthenticationPrincipal User user,
-                      @Valid Message message,
-                      BindingResult bindingResult,
-                      Model model,
-                      @RequestParam("file")MultipartFile file) throws IOException {
+    public String add(
+            @AuthenticationPrincipal User user,
+            @Valid Message message,
+            BindingResult bindingResult,
+            Model model,
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
         message.setAuthor(user);
 
-        if (bindingResult.hasErrors()){
+        if (bindingResult.hasErrors()) {
             Map<String, String> errorsMap = ControllerUtils.getErrors(bindingResult);
 
             model.mergeAttributes(errorsMap);
             model.addAttribute("message", message);
-        }
-        else {
-            if (file != null && !file.getOriginalFilename().isEmpty()) {
-
-                saveFile(message, file);
-
-            }
+        } else {
+            saveFile(message, file);
 
             model.addAttribute("message", null);
+
             messageRepo.save(message);
         }
+
         Iterable<Message> messages = messageRepo.findAll();
+
         model.addAttribute("messages", messages);
+
         return "main";
     }
 
     private void saveFile(@Valid Message message, @RequestParam("file") MultipartFile file) throws IOException {
-        File uploadDir = new File(uploadPath);
+        if (file != null && !file.getOriginalFilename().isEmpty()) {
+            File uploadDir = new File(uploadPath);
 
-        if (!uploadDir.exists()) {
-            uploadDir.mkdir();
+            if (!uploadDir.exists()) {
+                uploadDir.mkdir();
+            }
+
+            String uuidFile = UUID.randomUUID().toString();
+            String resultFilename = uuidFile + "." + file.getOriginalFilename();
+
+            file.transferTo(new File(uploadPath + "/" + resultFilename));
+
+            message.setFilename(resultFilename);
         }
-
-        String uuidFile = UUID.randomUUID().toString();
-        String resultFilename = uuidFile + "." + file.getOriginalFilename();
-
-        file.transferTo(new File(uploadPath + "/" + resultFilename));
-        message.setFilename(resultFilename);
     }
 
-    @GetMapping("user-messages/{user}")
+    @GetMapping("/user-messages/{user}")
     public String userMessges(
             @AuthenticationPrincipal User currentUser,
             @PathVariable User user,
@@ -102,6 +108,10 @@ public class MainController {
     ) {
         Set<Message> messages = user.getMessages();
 
+        model.addAttribute("userChannel", user);
+        model.addAttribute("subscriptionsCount", user.getSubscriptions().size());
+        model.addAttribute("subscribersCount", user.getSubscribers().size());
+        model.addAttribute("isSubscriber", user.getSubscribers().contains(currentUser));
         model.addAttribute("messages", messages);
         model.addAttribute("message", message);
         model.addAttribute("isCurrentUser", currentUser.equals(user));
@@ -134,46 +144,4 @@ public class MainController {
 
         return "redirect:/user-messages/" + user;
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
